@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Itinerario (5 días) — Editable</title>
+  <style>
+    :root{
+      --bg:#0b0f19;
+      --card:#111827;
+      --card2:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#243044;
+      --accent:#60a5fa;
+      --accent2:#34d399;
+      --danger:#fb7185;
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 15% 10%, rgba(96,165,250,.18), transparent 55%),
+                  radial-gradient(900px 600px at 85% 15%, rgba(52,211,153,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      line-height:1.35;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
+
+    .app{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    header{
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(17,24,39,.9), rgba(17,24,39,.55));
+    }
+
+    .top{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    h1{
+      font-size: 18px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size: 13px;
+      max-width: 70ch;
+    }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-left:auto;
+    }
+
+    button, .btn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size: 13px;
+      transition: transform .04s ease, background .2s ease, border-color .2s ease;
+      user-select:none;
+    }
+    button:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
+    button:active{ transform: translateY(1px); }
+
+    .btn-accent{
+      background: rgba(96,165,250,.15);
+      border-color: rgba(96,165,250,.25);
+    }
+    .btn-accent:hover{ background: rgba(96,165,250,.22); border-color: rgba(96,165,250,.35); }
+
+    .btn-danger{
+      background: rgba(251,113,133,.14);
+      border-color: rgba(251,113,133,.24);
+    }
+    .btn-danger:hover{ background: rgba(251,113,133,.22); border-color: rgba(251,113,133,.34); }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      padding: 12px 12px 14px;
+      overflow:auto;
+      scrollbar-width: thin;
+    }
+    .tab{
+      flex:0 0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width: 150px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+      text-align:left;
+    }
+    .tab small{ color: var(--muted); font-weight:600; letter-spacing:.2px; }
+    .tab strong{ font-size: 14px; }
+    .tab[aria-selected="true"]{
+      border-color: rgba(96,165,250,.45);
+      background: linear-gradient(180deg, rgba(96,165,250,.18), rgba(255,255,255,.05));
+    }
+
+    main{
+      padding: 14px 14px 6px;
+      background: linear-gradient(180deg, rgba(15,23,42,.62), rgba(15,23,42,.25));
+    }
+
+    .panel{
+      background: rgba(17,24,39,.72);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .panel-head{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom: 10px;
+    }
+
+    .day-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .day-title .kicker{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .day-title .name{
+      font-size: 18px;
+      margin:0;
+    }
+
+    .progress{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight:700;
+      letter-spacing:.2px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      white-space:nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .note{
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .note label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight:700;
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+    }
+    textarea, input[type="text"]{
+      width:100%;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 10px 10px;
+      font-size: 14px;
+      outline:none;
+    }
+    textarea{ min-height: 86px; resize: vertical; }
+
+    .timeline{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .item{
+      display:grid;
+      grid-template-columns: 110px 1fr auto;
+      gap:10px;
+      align-items:start;
+      padding: 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      position:relative;
+    }
+
+    .item::before{
+      content:"";
+      position:absolute;
+      left: 58px;
+      top: -10px;
+      bottom: -10px;
+      width: 2px;
+      background: linear-gradient(180deg, transparent, rgba(96,165,250,.35), transparent);
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .time{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      position:relative;
+      padding-left: 4px;
+    }
+    .time .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(96,165,250,.85);
+      position:absolute;
+      left: 53px;
+      top: 12px;
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 4px rgba(96,165,250,.15);
+    }
+    .time input{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .desc textarea{
+      min-height: 54px;
+    }
+
+    .mini-actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .icon-btn{
+      width: 40px;
+      height: 40px;
+      padding:0;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+    }
+    .icon{
+      width: 18px;
+      height: 18px;
+      display:inline-block;
+    }
+
+    .footer{
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      padding: 12px 14px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(17,24,39,.55), rgba(17,24,39,.85));
+      flex-wrap:wrap;
+    }
+
+    .footer .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      background: rgba(17,24,39,.92);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s ease, transform .25s ease;
+      max-width: min(92vw, 780px);
+      text-align:center;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 700px){
+      .tab{ min-width: 135px; }
+      .item{
+        grid-template-columns: 1fr;
+      }
+      .item::before{ display:none; }
+      .time .dot{ display:none; }
+      .mini-actions{
+        flex-direction:row;
+        justify-content:flex-end;
+      }
+    }
+
+    /* Print-friendly */
+    @media print{
+      body{ background:#fff; color:#000; }
+      .wrap{ max-width:none; padding:0; }
+      .app, header, .tabs, .footer, .actions, .mini-actions, .hint, .toast{ display:none !important; }
+      main{ background:#fff; }
+      .panel{ border:none; background:#fff; }
+      textarea, input{ border:1px solid #bbb; background:#fff; color:#000; }
+      .item{ border:1px solid #bbb; background:#fff; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="app" role="application" aria-label="Itinerario editable de 5 días">
+      <header>
+        <div class="top">
+          <div>
+            <h1>Itinerario editable (5 días)</h1>
+            <p class="subtitle">
+              Edita horas y actividades directamente. Se guarda automáticamente en este navegador (localStorage).
+              Puedes exportar el plan a JSON (copiar) o imprimirlo.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="btnAdd">+ Actividad</button>
+            <button class="btn btn-accent" id="btnExport">Exportar</button>
+            <button class="btn" id="btnPrint">Imprimir</button>
+            <button class="btn btn-danger" id="btnReset">Restaurar</button>
+          </div>
+        </div>
+
+        <div class="tabs" id="tabs" role="tablist" aria-label="Días del itinerario"></div>
+      </header>
+
+      <main>
+        <div class="panel">
+          <div class="panel-head">
+            <div class="day-title">
+              <div class="kicker" id="dayKicker">Día</div>
+              <h2 class="name" id="dayName">—</h2>
+            </div>
+            <div class="progress" id="progress">1 / 5</div>
+          </div>
+
+          <div class="grid">
+            <div class="note">
+              <label for="dayNotes">Notas del día (editable)</label>
+              <textarea id="dayNotes" placeholder="Ej: confirmar hora del viaje, reservar transporte, etc."></textarea>
+            </div>
+
+            <div class="note">
+              <label>Actividades (editable)</label>
+              <ul class="timeline" id="timeline"></ul>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div class="footer">
+        <div class="nav">
+          <button class="btn" id="btnPrev">← Anterior</button>
+          <button class="btn btn-accent" id="btnNext">Siguiente →</button>
+        </div>
+        <div class="hint" title="Se guarda automáticamente">
+          💾 Guardado automático activado
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "itinerario_5dias_v1";
+
+    const defaultPlan = {
+      meta: {
+        title: "Viaje CDMX / Tepoztlán — Itinerario",
+        updatedAt: new Date().toISOString()
+      },
+      days: [
+        {
+          label: "Martes 24",
+          place: "CDMX (DF)",
+          notes: "",
+          items: [
+            { time: "2:30 pm", text: "Llegada a DF. Almorzar." },
+            { time: "3:30 pm", text: "Buscar ropa para la boda de Pablo y Sara." },
+            { time: "4:30 pm", text: "Llegada al hotel y alistarse." },
+            { time: "6:00 pm", text: "Llegada al Teatro de Bellas Artes." },
+            { time: "10:00 pm", text: "Regresar al hotel." }
+          ]
+        },
+        {
+          label: "Miércoles 25",
+          place: "CDMX → Tepoztlán",
+          notes: "Confirmar hora del viaje a Tepoztlán. Definir plan de la mañana en CDMX.",
+          items: [
+            { time: "Mañana", text: "En la mañana en el DF (pendiente de definir)." },
+            { time: "¿Hora?", text: "Viaje a Tepoztlán (confirmar hora y transporte)." },
+            { time: "Noche", text: "Despedida de soltero." }
+          ]
+        },
+        {
+          label: "Jueves 26",
+          place: "Tepoztlán",
+          notes: "¿Hay desayuno compartido? Confirmar detalles de la boda.",
+          items: [
+            { time: "Mañana", text: "Conocer la zona." },
+            { time: "Mediodía", text: "Subir la pirámide (Tepozteco) — planear agua/tenis/tiempo." },
+            { time: "¿Desayuno?", text: "Desayuno compartido (confirmar)." },
+            { time: "5:00 pm", text: "Boda." }
+          ]
+        },
+        {
+          label: "Viernes 27",
+          place: "Tepoztlán → CDMX",
+          notes: "",
+          items: [
+            { time: "Mañana", text: "Regresar a DF (confirmar hora de salida)." },
+            { time: "Tarde", text: "Ir a la Iglesia." }
+          ]
+        },
+        {
+          label: "Sábado 28",
+          place: "CDMX",
+          notes: "Definir la segunda actividad del día.",
+          items: [
+            { time: "Mañana", text: "Pirámides (Teotihuacán u otras) — definir tour/transporte." },
+            { time: "¿?", text: "Actividad pendiente: museo, barrio, cena especial, etc." }
+          ]
+        }
+      ]
+    };
+
+    let plan = loadPlan();
+    let currentDayIndex = 0;
+
+    // ---------- Helpers ----------
+    function loadPlan(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return structuredClone(defaultPlan);
+        const parsed = JSON.parse(raw);
+        // Fallback safety
+        if(!parsed || !Array.isArray(parsed.days) || parsed.days.length !== 5){
+          return structuredClone(defaultPlan);
+        }
+        return parsed;
+      }catch{
+        return structuredClone(defaultPlan);
+      }
+    }
+
+    function savePlan(){
+      plan.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
+    }
+
+    function toast(msg){
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function iconSvg(type){
+      if(type === "trash"){
+        return `
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 3h6m-9 4h12m-10 0 1 15h6l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 10v8M14 10v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>`;
+      }
+      if(type === "up"){
+        return `
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`;
+      }
+      if(type === "down"){
+        return `
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`;
+      }
+      return "";
+    }
+
+    // ---------- Rendering ----------
+    function renderTabs(){
+      const tabs = document.getElementById("tabs");
+      tabs.innerHTML = "";
+
+      plan.days.forEach((d, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "tab";
+        btn.type = "button";
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-selected", String(idx === currentDayIndex));
+        btn.setAttribute("aria-controls", "dayPanel");
+        btn.addEventListener("click", () => {
+          currentDayIndex = idx;
+          renderAll();
+        });
+
+        btn.innerHTML = `
+          <small>${escapeHtml(d.place)}</small>
+          <strong>${escapeHtml(d.label)}</strong>
+        `;
+        tabs.appendChild(btn);
+      });
+    }
+
+    function renderDay(){
+      const day = plan.days[currentDayIndex];
+
+      document.getElementById("dayKicker").textContent = day.place;
+      document.getElementById("dayName").textContent = day.label;
+      document.getElementById("progress").textContent = `${currentDayIndex + 1} / ${plan.days.length}`;
+
+      const notes = document.getElementById("dayNotes");
+      notes.value = day.notes ?? "";
+      notes.oninput = () => {
+        day.notes = notes.value;
+        savePlan();
+      };
+
+      const timeline = document.getElementById("timeline");
+      timeline.innerHTML = "";
+
+      day.items.forEach((it, itemIndex) => {
+        const li = document.createElement("li");
+        li.className = "item";
+
+        // Time
+        const timeWrap = document.createElement("div");
+        timeWrap.className = "time";
+        timeWrap.innerHTML = `<span class="dot" aria-hidden="true"></span>`;
+
+        const timeInput = document.createElement("input");
+        timeInput.type = "text";
+        timeInput.value = it.time ?? "";
+        timeInput.placeholder = "Hora (ej: 6:00 pm)";
+        timeInput.setAttribute("aria-label", "Hora");
+        timeInput.addEventListener("input", () => {
+          it.time = timeInput.value;
+          savePlan();
+        });
+        timeWrap.appendChild(timeInput);
+
+        // Description
+        const descWrap = document.createElement("div");
+        descWrap.className = "desc";
+        const textArea = document.createElement("textarea");
+        textArea.value = it.text ?? "";
+        textArea.placeholder = "Actividad...";
+        textArea.setAttribute("aria-label", "Descripción de la actividad");
+        textArea.addEventListener("input", () => {
+          it.text = textArea.value;
+          savePlan();
+        });
+        descWrap.appendChild(textArea);
+
+        // Mini actions
+        const mini = document.createElement("div");
+        mini.className = "mini-actions";
+
+        const upBtn = document.createElement("button");
+        upBtn.className = "icon-btn";
+        upBtn.type = "button";
+        upBtn.title = "Subir";
+        upBtn.innerHTML = iconSvg("up");
+        upBtn.disabled = itemIndex === 0;
+        upBtn.addEventListener("click", () => {
+          moveItem(currentDayIndex, itemIndex, -1);
+        });
+
+        const downBtn = document.createElement("button");
+        downBtn.className = "icon-btn";
+        downBtn.type = "button";
+        downBtn.title = "Bajar";
+        downBtn.innerHTML = iconSvg("down");
+        downBtn.disabled = itemIndex === day.items.length - 1;
+        downBtn.addEventListener("click", () => {
+          moveItem(currentDayIndex, itemIndex, +1);
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "icon-btn btn-danger";
+        delBtn.type = "button";
+        delBtn.title = "Eliminar";
+        delBtn.innerHTML = iconSvg("trash");
+        delBtn.addEventListener("click", () => {
+          day.items.splice(itemIndex, 1);
+          savePlan();
+          renderAll();
+          toast("Actividad eliminada");
+        });
+
+        mini.appendChild(upBtn);
+        mini.appendChild(downBtn);
+        mini.appendChild(delBtn);
+
+        li.appendChild(timeWrap);
+        li.appendChild(descWrap);
+        li.appendChild(mini);
+
+        timeline.appendChild(li);
+      });
+
+      // Prev/Next state
+      document.getElementById("btnPrev").disabled = currentDayIndex === 0;
+      document.getElementById("btnNext").disabled = currentDayIndex === plan.days.length - 1;
+    }
+
+    function renderAll(){
+      renderTabs();
+      renderDay();
+    }
+
+    // ---------- Operations ----------
+    function addItem(){
+      const day = plan.days[currentDayIndex];
+      day.items.push({ time: "", text: "" });
+      savePlan();
+      renderAll();
+      toast("Actividad agregada");
+      // Focus last item
+      setTimeout(() => {
+        const inputs = document.querySelectorAll("#timeline .item input[type='text']");
+        const last = inputs[inputs.length - 1];
+        if(last) last.focus();
+      }, 30);
+    }
+
+    function moveItem(dayIdx, itemIdx, dir){
+      const day = plan.days[dayIdx];
+      const newIdx = itemIdx + dir;
+      if(newIdx < 0 || newIdx >= day.items.length) return;
+      const [moved] = day.items.splice(itemIdx, 1);
+      day.items.splice(newIdx, 0, moved);
+      savePlan();
+      renderAll();
+    }
+
+    async function exportPlan(){
+      const json = JSON.stringify(plan, null, 2);
+      try{
+        await navigator.clipboard.writeText(json);
+        toast("Exportado: JSON copiado al portapapeles ✅");
+      }catch{
+        // Fallback: open modal-ish
+        const w = window.open("", "_blank");
+        w.document.write("<pre>" + escapeHtml(json) + "</pre>");
+        w.document.title = "Itinerario (JSON)";
+        toast("No se pudo copiar. Abrí una pestaña con el JSON.");
+      }
+    }
+
+    function resetPlan(){
+      plan = structuredClone(defaultPlan);
+      savePlan();
+      currentDayIndex = 0;
+      renderAll();
+      toast("Itinerario restaurado");
+    }
+
+    // ---------- Tiny security for export rendering ----------
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // ---------- Wire up ----------
+    document.getElementById("btnAdd").addEventListener("click", addItem);
+    document.getElementById("btnPrev").addEventListener("click", () => { currentDayIndex = Math.max(0, currentDayIndex - 1); renderAll(); });
+    document.getElementById("btnNext").addEventListener("click", () => { currentDayIndex = Math.min(plan.days.length - 1, currentDayIndex + 1); renderAll(); });
+
+    document.getElementById("btnExport").addEventListener("click", exportPlan);
+    document.getElementById("btnPrint").addEventListener("click", () => window.print());
+    document.getElementById("btnReset").addEventListener("click", resetPlan);
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+
+      if(mod && e.key.toLowerCase() === "s"){
+        e.preventDefault();
+        savePlan();
+        toast("Guardado ✅");
+      }
+      if(e.altKey && e.key === "ArrowLeft"){
+        currentDayIndex = Math.max(0, currentDayIndex - 1);
+        renderAll();
+      }
+      if(e.altKey && e.key === "ArrowRight"){
+        currentDayIndex = Math.min(plan.days.length - 1, currentDayIndex + 1);
+        renderAll();
+      }
+    });
+
+    // Initial render
+    renderAll();
+  </script>
+</body>
+</html>
