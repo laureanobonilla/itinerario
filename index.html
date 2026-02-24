@@ -2,773 +2,604 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Itinerario (5 días) — Editable</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Itinerario (5 días) - Import/Export</title>
   <style>
     :root{
-      --bg:#0b0f19;
-      --card:#111827;
-      --card2:#0f172a;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --line:#243044;
-      --accent:#60a5fa;
-      --accent2:#34d399;
-      --danger:#fb7185;
-      --shadow: 0 18px 45px rgba(0,0,0,.35);
-      --radius:16px;
+      --bg:#0b1020;
+      --card:#121a33;
+      --card2:#0f1630;
+      --text:#eef2ff;
+      --muted:#b9c2ff;
+      --line:rgba(255,255,255,.12);
+      --accent:#7c9cff;
+      --danger:#ff6b6b;
+      --ok:#49d17c;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --pad: clamp(14px, 2.3vw, 20px);
+      --max: 980px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 15% 10%, rgba(96,165,250,.18), transparent 55%),
-                  radial-gradient(900px 600px at 85% 15%, rgba(52,211,153,.14), transparent 55%),
+      font-family:var(--font);
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(124,156,255,.28), transparent 55%),
+                  radial-gradient(900px 600px at 110% 20%, rgba(73,209,124,.18), transparent 50%),
                   var(--bg);
       color:var(--text);
-      line-height:1.35;
+      min-height:100vh;
+    }
+    .wrap{max-width:var(--max); margin:0 auto; padding: clamp(14px, 3vw, 26px);}
+    header{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+      margin-bottom: 14px;
+    }
+    .title{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      box-shadow: var(--shadow);
+      flex:1;
+    }
+    .title h1{margin:0 0 6px 0; font-size: clamp(18px, 2.6vw, 26px); letter-spacing:.2px;}
+    .title p{margin:0; color:var(--muted); line-height:1.35; font-size: 14px;}
+    .actions{
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-end;
+    }
+    button{
+      appearance:none; border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      color:var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,.25);
+      transition: transform .08s ease, border-color .2s ease, background .2s ease;
+      font-weight: 650;
+      font-size: 13px;
+      display:inline-flex; align-items:center; gap:8px;
+      white-space:nowrap;
+    }
+    button:hover{border-color: rgba(124,156,255,.5)}
+    button:active{transform: translateY(1px)}
+    button.secondary{background: rgba(255,255,255,.03)}
+    button.danger{border-color: rgba(255,107,107,.35)}
+    button.danger:hover{border-color: rgba(255,107,107,.65)}
+    button.ok{border-color: rgba(73,209,124,.35)}
+    button.ok:hover{border-color: rgba(73,209,124,.65)}
+
+    .nav{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin: 16px 0 14px 0;
+      padding: 12px;
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .nav .left, .nav .right{display:flex; gap:10px; align-items:center;}
+    .nav .center{
+      display:flex; flex-direction:column; align-items:center; gap:8px;
+      text-align:center;
+      flex:1;
+      min-width: 160px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 8px 12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .dots{display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+    .dot{
+      width: 10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.12);
+      cursor:pointer;
+    }
+    .dot.active{
+      background: var(--accent);
+      border-color: rgba(124,156,255,.8);
+      box-shadow: 0 0 0 4px rgba(124,156,255,.18);
     }
 
-    .wrap{
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 18px 14px 28px;
-    }
-
-    .app{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border: 1px solid rgba(255,255,255,.08);
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-
-    header{
-      padding: 16px 16px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(17,24,39,.9), rgba(17,24,39,.55));
+    .dayHeader{
+      padding: var(--pad);
+      display:flex; flex-wrap:wrap;
+      align-items:flex-start; justify-content:space-between; gap:12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.12);
     }
-
-    .top{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      justify-content:space-between;
-      flex-wrap:wrap;
+    .dayHeader h2{margin:0; font-size: clamp(16px, 2.2vw, 22px);}
+    .meta{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:flex-end;
+      color:var(--muted); font-size: 13px;
     }
-
-    h1{
-      font-size: 18px;
-      margin:0;
-      letter-spacing:.2px;
-    }
-    .subtitle{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size: 13px;
-      max-width: 70ch;
-    }
-
-    .actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      margin-left:auto;
-    }
-
-    button, .btn{
-      appearance:none;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight:600;
-      font-size: 13px;
-      transition: transform .04s ease, background .2s ease, border-color .2s ease;
-      user-select:none;
-    }
-    button:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
-    button:active{ transform: translateY(1px); }
-
-    .btn-accent{
-      background: rgba(96,165,250,.15);
-      border-color: rgba(96,165,250,.25);
-    }
-    .btn-accent:hover{ background: rgba(96,165,250,.22); border-color: rgba(96,165,250,.35); }
-
-    .btn-danger{
-      background: rgba(251,113,133,.14);
-      border-color: rgba(251,113,133,.24);
-    }
-    .btn-danger:hover{ background: rgba(251,113,133,.22); border-color: rgba(251,113,133,.34); }
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      padding: 12px 12px 14px;
-      overflow:auto;
-      scrollbar-width: thin;
-    }
-    .tab{
-      flex:0 0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      min-width: 150px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      cursor:pointer;
-      text-align:left;
-    }
-    .tab small{ color: var(--muted); font-weight:600; letter-spacing:.2px; }
-    .tab strong{ font-size: 14px; }
-    .tab[aria-selected="true"]{
-      border-color: rgba(96,165,250,.45);
-      background: linear-gradient(180deg, rgba(96,165,250,.18), rgba(255,255,255,.05));
-    }
-
-    main{
-      padding: 14px 14px 6px;
-      background: linear-gradient(180deg, rgba(15,23,42,.62), rgba(15,23,42,.25));
-    }
-
-    .panel{
-      background: rgba(17,24,39,.72);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius: 16px;
-      padding: 14px;
-    }
-
-    .panel-head{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom: 10px;
-    }
-
-    .day-title{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .day-title .kicker{
-      color: var(--muted);
-      font-size: 12px;
-      font-weight:700;
-      letter-spacing:.2px;
-    }
-    .day-title .name{
-      font-size: 18px;
-      margin:0;
-    }
-
-    .progress{
-      color: var(--muted);
-      font-size: 12px;
-      font-weight:700;
-      letter-spacing:.2px;
-      padding: 8px 10px;
+    .meta span{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.16);
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      white-space:nowrap;
     }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .note{
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 14px;
-      padding: 12px;
-    }
-    .note label{
-      display:block;
-      font-size: 12px;
+    .content{padding: var(--pad);}
+    .hint{
+      margin: 0 0 12px 0;
       color: var(--muted);
-      font-weight:700;
-      margin-bottom: 6px;
-      letter-spacing:.2px;
-    }
-    textarea, input[type="text"]{
-      width:100%;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      padding: 10px 10px;
-      font-size: 14px;
-      outline:none;
-    }
-    textarea{ min-height: 86px; resize: vertical; }
-
-    .timeline{
-      list-style:none;
-      padding:0;
-      margin:0;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      font-size: 13px;
+      line-height: 1.35;
     }
 
+    .list{display:flex; flex-direction:column; gap:10px;}
     .item{
       display:grid;
-      grid-template-columns: 110px 1fr auto;
+      grid-template-columns: 120px 1fr 44px;
       gap:10px;
-      align-items:start;
       padding: 10px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.04);
-      position:relative;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
     }
-
-    .item::before{
-      content:"";
-      position:absolute;
-      left: 58px;
-      top: -10px;
-      bottom: -10px;
-      width: 2px;
-      background: linear-gradient(180deg, transparent, rgba(96,165,250,.35), transparent);
-      opacity:.55;
-      pointer-events:none;
-    }
-
-    .time{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      position:relative;
-      padding-left: 4px;
-    }
-    .time .dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(96,165,250,.85);
-      position:absolute;
-      left: 53px;
-      top: 12px;
-      transform: translateX(-50%);
-      box-shadow: 0 0 0 4px rgba(96,165,250,.15);
-    }
-    .time input{
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .desc textarea{
-      min-height: 54px;
-    }
-
-    .mini-actions{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .icon-btn{
-      width: 40px;
-      height: 40px;
-      padding:0;
+    .item input[type="time"]{
+      width:100%;
+      padding: 10px 10px;
       border-radius: 12px;
-      display:grid;
-      place-items:center;
-    }
-    .icon{
-      width: 18px;
-      height: 18px;
-      display:inline-block;
-    }
-
-    .footer{
-      display:flex;
-      gap:10px;
-      justify-content:space-between;
-      padding: 12px 14px 14px;
-      border-top:1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(17,24,39,.55), rgba(17,24,39,.85));
-      flex-wrap:wrap;
-    }
-
-    .footer .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .hint{
-      color: var(--muted);
-      font-size: 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding: 8px 10px;
-      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      background: rgba(17,24,39,.92);
-      border:1px solid rgba(255,255,255,.12);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 999px;
-      box-shadow: var(--shadow);
-      font-size: 13px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .25s ease, transform .25s ease;
-      max-width: min(92vw, 780px);
-      text-align:center;
+      font-weight: 650;
+      outline:none;
     }
-    .toast.show{
-      opacity:1;
-      transform: translateX(-50%) translateY(-4px);
+    .item textarea{
+      width:100%;
+      min-height: 44px;
+      resize: vertical;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .iconBtn{
+      width:44px; height:44px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      cursor:pointer;
+      color: var(--text);
+      font-weight: 900;
+      user-select:none;
+    }
+    .iconBtn:hover{border-color: rgba(255,107,107,.55); color: var(--danger)}
+    .rowActions{
+      margin-top: 12px;
+      display:flex; gap:10px; flex-wrap:wrap;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 700px){
-      .tab{ min-width: 135px; }
-      .item{
-        grid-template-columns: 1fr;
-      }
-      .item::before{ display:none; }
-      .time .dot{ display:none; }
-      .mini-actions{
-        flex-direction:row;
-        justify-content:flex-end;
-      }
+    .notes{
+      margin-top: 16px;
+      border-top: 1px dashed rgba(255,255,255,.18);
+      padding-top: 14px;
+    }
+    .notes label{display:block; color:var(--muted); font-size: 13px; margin-bottom: 8px;}
+    .notes textarea{
+      width:100%;
+      min-height: 100px;
+      resize: vertical;
+      padding: 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+      line-height: 1.4;
     }
 
-    /* Print-friendly */
+    @media (max-width: 720px){
+      header{flex-direction:column; align-items:stretch;}
+      .actions{justify-content:flex-start}
+      .item{grid-template-columns: 1fr; }
+      .iconBtn{justify-self:end}
+      .nav{flex-wrap:wrap}
+      .nav .left, .nav .right{width:100%; justify-content:space-between}
+      .nav .center{order:-1; width:100%}
+    }
+
     @media print{
-      body{ background:#fff; color:#000; }
-      .wrap{ max-width:none; padding:0; }
-      .app, header, .tabs, .footer, .actions, .mini-actions, .hint, .toast{ display:none !important; }
-      main{ background:#fff; }
-      .panel{ border:none; background:#fff; }
-      textarea, input{ border:1px solid #bbb; background:#fff; color:#000; }
-      .item{ border:1px solid #bbb; background:#fff; }
+      body{background:white; color:black;}
+      .actions, .nav, .rowActions, .iconBtn{display:none !important;}
+      .card{box-shadow:none; border-color:#ddd}
+      .item{background:#fff; border-color:#ddd}
+      .item textarea, .item input, .notes textarea{border-color:#ddd; background:#fff; color:#000}
+      .title{box-shadow:none; border-color:#ddd}
+      .title p{color:#333}
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <div class="app" role="application" aria-label="Itinerario editable de 5 días">
-      <header>
-        <div class="top">
-          <div>
-            <h1>Itinerario editable (5 días)</h1>
-            <p class="subtitle">
-              Edita horas y actividades directamente. Se guarda automáticamente en este navegador (localStorage).
-              Puedes exportar el plan a JSON (copiar) o imprimirlo.
-            </p>
-          </div>
-          <div class="actions">
-            <button class="btn" id="btnAdd">+ Actividad</button>
-            <button class="btn btn-accent" id="btnExport">Exportar</button>
-            <button class="btn" id="btnPrint">Imprimir</button>
-            <button class="btn btn-danger" id="btnReset">Restaurar</button>
-          </div>
-        </div>
+    <header>
+      <div class="title">
+        <h1>Itinerario editable (5 días)</h1>
+        <p>
+          Se guarda localmente en cada dispositivo. Para pasar los cambios a otro dispositivo usa:
+          <b>Exportar JSON</b> en uno y <b>Importar JSON</b> en el otro.
+        </p>
+      </div>
+      <div class="actions">
+        <button class="secondary" id="btnCopy">📋 Copiar resumen</button>
+        <button class="secondary" id="btnExport">⬇️ Exportar JSON</button>
+        <button class="secondary" id="btnImport">⬆️ Importar JSON</button>
+        <button class="secondary" id="btnPrint">🖨️ Imprimir</button>
+        <button class="danger" id="btnReset">🧹 Reset</button>
+        <input type="file" id="fileInput" accept="application/json" hidden />
+      </div>
+    </header>
 
-        <div class="tabs" id="tabs" role="tablist" aria-label="Días del itinerario"></div>
-      </header>
+    <div class="nav">
+      <div class="left">
+        <button id="prevBtn" class="secondary">⬅️ Anterior</button>
+      </div>
 
-      <main>
-        <div class="panel">
-          <div class="panel-head">
-            <div class="day-title">
-              <div class="kicker" id="dayKicker">Día</div>
-              <h2 class="name" id="dayName">—</h2>
-            </div>
-            <div class="progress" id="progress">1 / 5</div>
-          </div>
+      <div class="center">
+        <div class="pill" id="dayCounter">Día 1 de 5</div>
+        <div class="dots" id="dots"></div>
+      </div>
 
-          <div class="grid">
-            <div class="note">
-              <label for="dayNotes">Notas del día (editable)</label>
-              <textarea id="dayNotes" placeholder="Ej: confirmar hora del viaje, reservar transporte, etc."></textarea>
-            </div>
-
-            <div class="note">
-              <label>Actividades (editable)</label>
-              <ul class="timeline" id="timeline"></ul>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <div class="footer">
-        <div class="nav">
-          <button class="btn" id="btnPrev">← Anterior</button>
-          <button class="btn btn-accent" id="btnNext">Siguiente →</button>
-        </div>
-        <div class="hint" title="Se guarda automáticamente">
-          💾 Guardado automático activado
-        </div>
+      <div class="right">
+        <button id="nextBtn" class="secondary">Siguiente ➡️</button>
       </div>
     </div>
-  </div>
 
-  <div class="toast" id="toast" aria-live="polite"></div>
+    <main class="card" id="dayCard" aria-live="polite"></main>
+  </div>
 
   <script>
     const STORAGE_KEY = "itinerario_5dias_v1";
 
-    const defaultPlan = {
-      meta: {
-        title: "Viaje CDMX / Tepoztlán — Itinerario",
-        updatedAt: new Date().toISOString()
+    const defaultPlan = [
+      {
+        dayTitle: "Martes 24",
+        place: "CDMX (DF)",
+        focus: "Llegada + compras + Bellas Artes",
+        activities: [
+          { time: "14:30", text: "Llegada a DF a las 2:30 pm." },
+          { time: "",      text: "Almorzar y buscar ropa para la boda de Pablo y Sara." },
+          { time: "16:30", text: "Llegada al hotel y alistarse." },
+          { time: "18:00", text: "Llegada al Teatro / Palacio de Bellas Artes." },
+          { time: "22:00", text: "Regresar al hotel." }
+        ],
+        notes: ""
       },
-      days: [
-        {
-          label: "Martes 24",
-          place: "CDMX (DF)",
-          notes: "",
-          items: [
-            { time: "2:30 pm", text: "Llegada a DF. Almorzar." },
-            { time: "3:30 pm", text: "Buscar ropa para la boda de Pablo y Sara." },
-            { time: "4:30 pm", text: "Llegada al hotel y alistarse." },
-            { time: "6:00 pm", text: "Llegada al Teatro de Bellas Artes." },
-            { time: "10:00 pm", text: "Regresar al hotel." }
-          ]
-        },
-        {
-          label: "Miércoles 25",
-          place: "CDMX → Tepoztlán",
-          notes: "Confirmar hora del viaje a Tepoztlán. Definir plan de la mañana en CDMX.",
-          items: [
-            { time: "Mañana", text: "En la mañana en el DF (pendiente de definir)." },
-            { time: "¿Hora?", text: "Viaje a Tepoztlán (confirmar hora y transporte)." },
-            { time: "Noche", text: "Despedida de soltero." }
-          ]
-        },
-        {
-          label: "Jueves 26",
-          place: "Tepoztlán",
-          notes: "¿Hay desayuno compartido? Confirmar detalles de la boda.",
-          items: [
-            { time: "Mañana", text: "Conocer la zona." },
-            { time: "Mediodía", text: "Subir la pirámide (Tepozteco) — planear agua/tenis/tiempo." },
-            { time: "¿Desayuno?", text: "Desayuno compartido (confirmar)." },
-            { time: "5:00 pm", text: "Boda." }
-          ]
-        },
-        {
-          label: "Viernes 27",
-          place: "Tepoztlán → CDMX",
-          notes: "",
-          items: [
-            { time: "Mañana", text: "Regresar a DF (confirmar hora de salida)." },
-            { time: "Tarde", text: "Ir a la Iglesia." }
-          ]
-        },
-        {
-          label: "Sábado 28",
-          place: "CDMX",
-          notes: "Definir la segunda actividad del día.",
-          items: [
-            { time: "Mañana", text: "Pirámides (Teotihuacán u otras) — definir tour/transporte." },
-            { time: "¿?", text: "Actividad pendiente: museo, barrio, cena especial, etc." }
-          ]
-        }
-      ]
-    };
+      {
+        dayTitle: "Miércoles 25",
+        place: "CDMX → Tepoztlán",
+        focus: "Traslado + despedida de soltero",
+        activities: [
+          { time: "", text: "Mañana en CDMX: (definir plan) — ¿desayuno? ¿paseo corto?" },
+          { time: "", text: "Viaje a Tepoztlán (hora por definir)." },
+          { time: "", text: "Check-in / acomodarse (si aplica)." },
+          { time: "", text: "Noche: despedida de soltero." }
+        ],
+        notes: "Pendiente: definir hora de salida, transporte, y lugar exacto de la despedida."
+      },
+      {
+        dayTitle: "Jueves 26",
+        place: "Tepoztlán",
+        focus: "Explorar + subir pirámide + boda",
+        activities: [
+          { time: "",      text: "Conocer la zona durante la mañana." },
+          { time: "",      text: "Subir la pirámide / Tepozteco (hora por definir)." },
+          { time: "",      text: "¿Hay un desayuno compartido? (confirmar)." },
+          { time: "17:00", text: "Boda (Pablo y Sara) a las 5:00 pm." }
+        ],
+        notes: ""
+      },
+      {
+        dayTitle: "Viernes 27",
+        place: "Tepoztlán → CDMX (DF)",
+        focus: "Regreso + Iglesia",
+        activities: [
+          { time: "", text: "Regresar a DF (hora por definir)." },
+          { time: "", text: "Ir a la Iglesia (definir cuál y a qué hora)." }
+        ],
+        notes: ""
+      },
+      {
+        dayTitle: "Sábado 28",
+        place: "CDMX (DF)",
+        focus: "Pirámides + pendiente",
+        activities: [
+          { time: "", text: "Pirámides (¿Teotihuacán?) — definir hora y transporte." },
+          { time: "", text: "Actividad pendiente: ________" }
+        ],
+        notes: ""
+      }
+    ];
 
-    let plan = loadPlan();
-    let currentDayIndex = 0;
+    // Normaliza un plan importado para evitar errores si falta algún campo.
+    function normalizePlan(maybePlan) {
+      const base = structuredClone(defaultPlan);
 
-    // ---------- Helpers ----------
-    function loadPlan(){
-      try{
+      if (!Array.isArray(maybePlan) || maybePlan.length !== 5) return base;
+
+      return maybePlan.map((d, idx) => {
+        const safe = base[idx];
+
+        const dayTitle = typeof d?.dayTitle === "string" ? d.dayTitle : safe.dayTitle;
+        const place    = typeof d?.place    === "string" ? d.place    : safe.place;
+        const focus    = typeof d?.focus    === "string" ? d.focus    : safe.focus;
+        const notes    = typeof d?.notes    === "string" ? d.notes    : "";
+
+        const actsRaw = Array.isArray(d?.activities) ? d.activities : safe.activities;
+        const activities = actsRaw.map(a => ({
+          time: (typeof a?.time === "string") ? a.time : "",
+          text: (typeof a?.text === "string") ? a.text : ""
+        }));
+
+        return { dayTitle, place, focus, activities, notes };
+      });
+    }
+
+    function loadPlan() {
+      try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return structuredClone(defaultPlan);
-        const parsed = JSON.parse(raw);
-        // Fallback safety
-        if(!parsed || !Array.isArray(parsed.days) || parsed.days.length !== 5){
-          return structuredClone(defaultPlan);
-        }
-        return parsed;
-      }catch{
+        if (!raw) return structuredClone(defaultPlan);
+        return normalizePlan(JSON.parse(raw));
+      } catch {
         return structuredClone(defaultPlan);
       }
     }
 
-    function savePlan(){
-      plan.meta.updatedAt = new Date().toISOString();
+    function savePlan(plan) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
     }
 
-    function toast(msg){
-      const el = document.getElementById("toast");
-      el.textContent = msg;
-      el.classList.add("show");
-      setTimeout(() => el.classList.remove("show"), 1800);
-    }
+    let plan = loadPlan();
+    let currentIndex = 0;
 
-    function iconSvg(type){
-      if(type === "trash"){
-        return `
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M9 3h6m-9 4h12m-10 0 1 15h6l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M10 10v8M14 10v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>`;
+    const dayCard = document.getElementById("dayCard");
+    const dayCounter = document.getElementById("dayCounter");
+    const dots = document.getElementById("dots");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function renderDots() {
+      dots.innerHTML = "";
+      for (let i = 0; i < plan.length; i++) {
+        const d = document.createElement("div");
+        d.className = "dot" + (i === currentIndex ? " active" : "");
+        d.title = `Ir a ${plan[i].dayTitle}`;
+        d.tabIndex = 0;
+        d.setAttribute("role", "button");
+        d.setAttribute("aria-label", `Ir a ${plan[i].dayTitle}`);
+        d.addEventListener("click", () => showDay(i));
+        d.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") showDay(i);
+        });
+        dots.appendChild(d);
       }
-      if(type === "up"){
-        return `
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>`;
-      }
-      if(type === "down"){
-        return `
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>`;
-      }
-      return "";
     }
 
-    // ---------- Rendering ----------
-    function renderTabs(){
-      const tabs = document.getElementById("tabs");
-      tabs.innerHTML = "";
-
-      plan.days.forEach((d, idx) => {
-        const btn = document.createElement("button");
-        btn.className = "tab";
-        btn.type = "button";
-        btn.setAttribute("role", "tab");
-        btn.setAttribute("aria-selected", String(idx === currentDayIndex));
-        btn.setAttribute("aria-controls", "dayPanel");
-        btn.addEventListener("click", () => {
-          currentDayIndex = idx;
-          renderAll();
-        });
-
-        btn.innerHTML = `
-          <small>${escapeHtml(d.place)}</small>
-          <strong>${escapeHtml(d.label)}</strong>
-        `;
-        tabs.appendChild(btn);
-      });
+    function showDay(idx) {
+      currentIndex = Math.max(0, Math.min(plan.length - 1, idx));
+      renderDay();
+      renderDots();
+      updateNavState();
     }
 
-    function renderDay(){
-      const day = plan.days[currentDayIndex];
-
-      document.getElementById("dayKicker").textContent = day.place;
-      document.getElementById("dayName").textContent = day.label;
-      document.getElementById("progress").textContent = `${currentDayIndex + 1} / ${plan.days.length}`;
-
-      const notes = document.getElementById("dayNotes");
-      notes.value = day.notes ?? "";
-      notes.oninput = () => {
-        day.notes = notes.value;
-        savePlan();
-      };
-
-      const timeline = document.getElementById("timeline");
-      timeline.innerHTML = "";
-
-      day.items.forEach((it, itemIndex) => {
-        const li = document.createElement("li");
-        li.className = "item";
-
-        // Time
-        const timeWrap = document.createElement("div");
-        timeWrap.className = "time";
-        timeWrap.innerHTML = `<span class="dot" aria-hidden="true"></span>`;
-
-        const timeInput = document.createElement("input");
-        timeInput.type = "text";
-        timeInput.value = it.time ?? "";
-        timeInput.placeholder = "Hora (ej: 6:00 pm)";
-        timeInput.setAttribute("aria-label", "Hora");
-        timeInput.addEventListener("input", () => {
-          it.time = timeInput.value;
-          savePlan();
-        });
-        timeWrap.appendChild(timeInput);
-
-        // Description
-        const descWrap = document.createElement("div");
-        descWrap.className = "desc";
-        const textArea = document.createElement("textarea");
-        textArea.value = it.text ?? "";
-        textArea.placeholder = "Actividad...";
-        textArea.setAttribute("aria-label", "Descripción de la actividad");
-        textArea.addEventListener("input", () => {
-          it.text = textArea.value;
-          savePlan();
-        });
-        descWrap.appendChild(textArea);
-
-        // Mini actions
-        const mini = document.createElement("div");
-        mini.className = "mini-actions";
-
-        const upBtn = document.createElement("button");
-        upBtn.className = "icon-btn";
-        upBtn.type = "button";
-        upBtn.title = "Subir";
-        upBtn.innerHTML = iconSvg("up");
-        upBtn.disabled = itemIndex === 0;
-        upBtn.addEventListener("click", () => {
-          moveItem(currentDayIndex, itemIndex, -1);
-        });
-
-        const downBtn = document.createElement("button");
-        downBtn.className = "icon-btn";
-        downBtn.type = "button";
-        downBtn.title = "Bajar";
-        downBtn.innerHTML = iconSvg("down");
-        downBtn.disabled = itemIndex === day.items.length - 1;
-        downBtn.addEventListener("click", () => {
-          moveItem(currentDayIndex, itemIndex, +1);
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "icon-btn btn-danger";
-        delBtn.type = "button";
-        delBtn.title = "Eliminar";
-        delBtn.innerHTML = iconSvg("trash");
-        delBtn.addEventListener("click", () => {
-          day.items.splice(itemIndex, 1);
-          savePlan();
-          renderAll();
-          toast("Actividad eliminada");
-        });
-
-        mini.appendChild(upBtn);
-        mini.appendChild(downBtn);
-        mini.appendChild(delBtn);
-
-        li.appendChild(timeWrap);
-        li.appendChild(descWrap);
-        li.appendChild(mini);
-
-        timeline.appendChild(li);
-      });
-
-      // Prev/Next state
-      document.getElementById("btnPrev").disabled = currentDayIndex === 0;
-      document.getElementById("btnNext").disabled = currentDayIndex === plan.days.length - 1;
+    function updateNavState() {
+      dayCounter.textContent = `Día ${currentIndex + 1} de ${plan.length}`;
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === plan.length - 1;
+      prevBtn.style.opacity = prevBtn.disabled ? .55 : 1;
+      nextBtn.style.opacity = nextBtn.disabled ? .55 : 1;
     }
 
-    function renderAll(){
-      renderTabs();
+    function addActivity(dayIdx) {
+      plan[dayIdx].activities.push({ time: "", text: "" });
+      savePlan(plan);
       renderDay();
     }
 
-    // ---------- Operations ----------
-    function addItem(){
-      const day = plan.days[currentDayIndex];
-      day.items.push({ time: "", text: "" });
-      savePlan();
-      renderAll();
-      toast("Actividad agregada");
-      // Focus last item
-      setTimeout(() => {
-        const inputs = document.querySelectorAll("#timeline .item input[type='text']");
-        const last = inputs[inputs.length - 1];
-        if(last) last.focus();
-      }, 30);
+    function removeActivity(dayIdx, actIdx) {
+      plan[dayIdx].activities.splice(actIdx, 1);
+      savePlan(plan);
+      renderDay();
     }
 
-    function moveItem(dayIdx, itemIdx, dir){
-      const day = plan.days[dayIdx];
-      const newIdx = itemIdx + dir;
-      if(newIdx < 0 || newIdx >= day.items.length) return;
-      const [moved] = day.items.splice(itemIdx, 1);
-      day.items.splice(newIdx, 0, moved);
-      savePlan();
-      renderAll();
+    function renderDay() {
+      const d = plan[currentIndex];
+
+      dayCard.innerHTML = `
+        <div class="dayHeader">
+          <div>
+            <h2>${escapeHtml(d.dayTitle)}</h2>
+          </div>
+          <div class="meta">
+            <span>📍 ${escapeHtml(d.place || "")}</span>
+            <span>🎯 ${escapeHtml(d.focus || "")}</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <p class="hint">
+            Edita horas y actividades. Para sincronizar entre dispositivos:
+            <b>Exporta JSON</b> en uno → pásalo (AirDrop/iCloud/WhatsApp archivo) → <b>Importa JSON</b> en el otro.
+          </p>
+
+          <div class="list" id="list"></div>
+
+          <div class="rowActions">
+            <button class="ok" id="btnAdd">➕ Agregar actividad</button>
+          </div>
+
+          <div class="notes">
+            <label for="notes">Notas del día (editable)</label>
+            <textarea id="notes" placeholder="Notas, pendientes, direcciones, etc."></textarea>
+          </div>
+        </div>
+      `;
+
+      const list = dayCard.querySelector("#list");
+
+      d.activities.forEach((a, i) => {
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <input type="time" value="${escapeAttr(a.time || "")}" aria-label="Hora actividad ${i+1}">
+          <textarea aria-label="Descripción actividad ${i+1}" placeholder="Actividad...">${escapeHtml(a.text || "")}</textarea>
+          <div class="iconBtn" title="Eliminar" aria-label="Eliminar actividad" role="button">✕</div>
+        `;
+
+        const timeInput = row.querySelector('input[type="time"]');
+        const textArea = row.querySelector("textarea");
+        const delBtn = row.querySelector(".iconBtn");
+
+        timeInput.addEventListener("input", () => {
+          plan[currentIndex].activities[i].time = timeInput.value;
+          savePlan(plan);
+        });
+        textArea.addEventListener("input", () => {
+          plan[currentIndex].activities[i].text = textArea.value;
+          savePlan(plan);
+        });
+        delBtn.addEventListener("click", () => removeActivity(currentIndex, i));
+
+        list.appendChild(row);
+      });
+
+      const notes = dayCard.querySelector("#notes");
+      notes.value = d.notes || "";
+      notes.addEventListener("input", () => {
+        plan[currentIndex].notes = notes.value;
+        savePlan(plan);
+      });
+
+      dayCard.querySelector("#btnAdd").addEventListener("click", () => addActivity(currentIndex));
     }
 
-    async function exportPlan(){
-      const json = JSON.stringify(plan, null, 2);
-      try{
-        await navigator.clipboard.writeText(json);
-        toast("Exportado: JSON copiado al portapapeles ✅");
-      }catch{
-        // Fallback: open modal-ish
-        const w = window.open("", "_blank");
-        w.document.write("<pre>" + escapeHtml(json) + "</pre>");
-        w.document.title = "Itinerario (JSON)";
-        toast("No se pudo copiar. Abrí una pestaña con el JSON.");
-      }
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replaceAll("\n", " ");
     }
 
-    function resetPlan(){
-      plan = structuredClone(defaultPlan);
-      savePlan();
-      currentDayIndex = 0;
-      renderAll();
-      toast("Itinerario restaurado");
-    }
+    // Nav buttons
+    prevBtn.addEventListener("click", () => showDay(currentIndex - 1));
+    nextBtn.addEventListener("click", () => showDay(currentIndex + 1));
 
-    // ---------- Tiny security for export rendering ----------
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // ---------- Wire up ----------
-    document.getElementById("btnAdd").addEventListener("click", addItem);
-    document.getElementById("btnPrev").addEventListener("click", () => { currentDayIndex = Math.max(0, currentDayIndex - 1); renderAll(); });
-    document.getElementById("btnNext").addEventListener("click", () => { currentDayIndex = Math.min(plan.days.length - 1, currentDayIndex + 1); renderAll(); });
-
-    document.getElementById("btnExport").addEventListener("click", exportPlan);
-    document.getElementById("btnPrint").addEventListener("click", () => window.print());
-    document.getElementById("btnReset").addEventListener("click", resetPlan);
-
-    // Keyboard shortcuts
+    // Keyboard shortcuts: ← / →
     window.addEventListener("keydown", (e) => {
-      const isMac = navigator.platform.toUpperCase().includes("MAC");
-      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if (e.target && (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")) return;
+      if (e.key === "ArrowLeft") showDay(currentIndex - 1);
+      if (e.key === "ArrowRight") showDay(currentIndex + 1);
+    });
 
-      if(mod && e.key.toLowerCase() === "s"){
-        e.preventDefault();
-        savePlan();
-        toast("Guardado ✅");
-      }
-      if(e.altKey && e.key === "ArrowLeft"){
-        currentDayIndex = Math.max(0, currentDayIndex - 1);
-        renderAll();
-      }
-      if(e.altKey && e.key === "ArrowRight"){
-        currentDayIndex = Math.min(plan.days.length - 1, currentDayIndex + 1);
-        renderAll();
+    // Actions
+    document.getElementById("btnPrint").addEventListener("click", () => window.print());
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      if (!confirm("¿Resetear a la versión inicial? Se perderán cambios guardados en este dispositivo.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      plan = structuredClone(defaultPlan);
+      currentIndex = 0;
+      renderDots();
+      renderDay();
+      updateNavState();
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(plan, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "itinerario_5dias.json";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 800);
+    });
+
+    document.getElementById("btnCopy").addEventListener("click", async () => {
+      const text = plan.map((d, idx) => {
+        const lines = [];
+        lines.push(`${idx+1}) ${d.dayTitle} — ${d.place} — ${d.focus}`);
+        d.activities.forEach(a => {
+          const t = (a.time && a.time.trim()) ? a.time : "—";
+          lines.push(`   • ${t}  ${a.text || ""}`.trimEnd());
+        });
+        if (d.notes && d.notes.trim()) {
+          lines.push(`   Notas: ${d.notes.trim()}`);
+        }
+        return lines.join("\n");
+      }).join("\n\n");
+
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Resumen copiado al portapapeles ✅");
+      } catch {
+        prompt("Copia manualmente:", text);
       }
     });
 
-    // Initial render
-    renderAll();
+    // Import JSON
+    const fileInput = document.getElementById("fileInput");
+    document.getElementById("btnImport").addEventListener("click", () => {
+      fileInput.value = "";
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const importedRaw = JSON.parse(text);
+        const imported = normalizePlan(importedRaw);
+
+        // Confirmación opcional porque sobreescribe el estado local
+        const ok = confirm("Esto reemplazará el itinerario guardado en ESTE dispositivo. ¿Continuar?");
+        if (!ok) return;
+
+        plan = imported;
+        savePlan(plan);
+        currentIndex = 0;
+        renderDots();
+        renderDay();
+        updateNavState();
+        alert("Importado ✅");
+      } catch {
+        alert("No pude importar ese archivo. Asegúrate de que sea un JSON exportado por esta misma página.");
+      }
+    });
+
+    // Init
+    renderDots();
+    renderDay();
+    updateNavState();
   </script>
 </body>
 </html>
